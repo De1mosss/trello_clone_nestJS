@@ -3,19 +3,19 @@ import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
-import { UsersModule } from '../users/users.module';
+import { PrismaService } from '../prisma/prisma.service';
 import { JwtStrategy } from './jwt.strategy';
 
 @Module({
     imports: [
-        UsersModule,
         PassportModule,
         JwtModule.register({
-            secret: process.env.JWT_SECRET || 'super-secret-key', // секретный ключ для подписи токенов
-            signOptions: { expiresIn: '1h' }, // срок жизни токена
+            secret: process.env.JWT_SECRET || 'super-secret-key',
+            signOptions: { expiresIn: '1h' },
         }),
     ],
-    providers: [AuthService, JwtStrategy],
     controllers: [AuthController],
+    providers: [AuthService, PrismaService, JwtStrategy],
+    exports: [AuthService],
 })
 export class AuthModule {}
