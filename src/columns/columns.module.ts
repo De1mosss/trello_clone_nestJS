@@ -1,13 +1,14 @@
 import {Module} from '@nestjs/common';
 import {ColumnsService} from './columns.service';
 import {ColumnsController} from './columns.controller';
-import {PrismaModule} from '../prisma/prisma.module';
-import {AuthModule} from '../auth/auth.module';
+import {PrismaService} from '../prisma/prisma.service';
+import {JwtModule} from '@nestjs/jwt';
+import {JwtStrategy} from '../auth/jwt.strategy';
 
 @Module({
-    imports: [PrismaModule, AuthModule],
+    imports: [JwtModule.register({})],
     controllers: [ColumnsController],
-    providers: [ColumnsService],
+    providers: [ColumnsService, PrismaService, JwtStrategy],
 })
 export class ColumnsModule {
 }

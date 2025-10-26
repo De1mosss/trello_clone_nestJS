@@ -14,7 +14,10 @@ model User {
   password  String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  columns   Column[]
+
+  columns  Column[]
+  cards    Card[]
+  comments Comment[]
 }
 
 model Column {
@@ -24,7 +27,7 @@ model Column {
   updatedAt DateTime @updatedAt
 
   userId Int
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id])
   cards  Card[]
 }
 
@@ -35,16 +38,22 @@ model Card {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
+  userId   Int
   columnId Int
-  column   Column    @relation(fields: [columnId], references: [id], onDelete: Cascade)
+
+  user     User      @relation(fields: [userId], references: [id])
+  column   Column    @relation(fields: [columnId], references: [id])
   comments Comment[]
 }
 
 model Comment {
   id        Int      @id @default(autoincrement())
-  text      String
+  content   String
   createdAt DateTime @default(now())
 
+  userId Int
   cardId Int
-  card   Card @relation(fields: [cardId], references: [id], onDelete: Cascade)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  card Card @relation(fields: [cardId], references: [id], onDelete: Cascade)
 }

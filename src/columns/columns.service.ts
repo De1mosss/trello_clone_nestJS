@@ -1,17 +1,17 @@
-import {Injectable} from '@nestjs/common';
+import {Injectable, NotFoundException, ForbiddenException} from '@nestjs/common';
 import {PrismaService} from '../prisma/prisma.service';
 import {Prisma} from '@prisma/client';
 
 @Injectable()
 export class ColumnsService {
-    constructor(private prisma: PrismaService) {
+    constructor(private readonly prisma: PrismaService) {
     }
 
-    async create(data: Prisma.ColumnCreateInput, userId: number) {
+    async create(userId: number, title: string) {
         return this.prisma.column.create({
             data: {
-                ...data,
-                user: {connect: {id: userId}},
+                title,
+                userId,
             },
         });
     }
@@ -23,16 +23,24 @@ export class ColumnsService {
         });
     }
 
-    async update(id: number, data: Prisma.ColumnUpdateInput) {
+    async update(id: number, userId: number, data: Prisma.ColumnUpdateInput) {
+        const column = await this.prisma.column.findUnique({where: {id}});
+
+        if (!column) throw new NotFoundException('Колонка не найдена');
+        if (column.userId !== userId) throw new ForbiddenException('Нет доступа');
+
         return this.prisma.column.update({
             where: {id},
             data,
         });
     }
 
-    async remove(id: number) {
-        return this.prisma.column.delete({
-            where: {id},
-        });
+    async remove(id: number, userId: number) {
+        const column = await this.prisma.column.findUnique({where: {id}});
+
+        if (!column) throw new NotFoundException('Колонка не найдена');
+        if (column.userId !== userId) throw new ForbiddenException('Нет доступа');
+
+        return this.prisma.column.delete({where: {id}});
     }
 }

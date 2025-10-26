@@ -6,6 +6,7 @@ import {PrismaService} from "./prisma/prisma.service";
 import {UsersModule} from './users/users.module';
 import {AuthModule} from './auth/auth.module';
 import {ColumnsModule} from './columns/columns.module';
+import { CardsModule } from './cards/cards.module';
 
 
 @Module({
@@ -14,6 +15,7 @@ import {ColumnsModule} from './columns/columns.module';
         UsersModule,
         AuthModule,
         ColumnsModule,
+        CardsModule,
     ],
     controllers: [AppController],
     providers: [AppService, PrismaService],
