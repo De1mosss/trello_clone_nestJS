@@ -1,98 +1,275 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Документация проекта Trello Clone (NestJS)
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+## Обзор проекта
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+Это REST API приложение, реализующее функциональность клона Trello, построенное на фреймворке NestJS с использованием Prisma ORM и PostgreSQL в качестве базы данных. 
 
-## Description
+## Технологический стек
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+- **Backend Framework**: NestJS 11.0.1
+- **ORM**: Prisma 6.18.0
+- **База данных**: PostgreSQL
+- **Аутентификация**: JWT (JSON Web Tokens) с Passport
+- **Хеширование паролей**: bcrypt
+- **Язык**: TypeScript 
 
-## Project setup
+## Архитектура приложения
 
-```bash
-$ npm install
+Приложение использует модульную архитектуру NestJS и состоит из следующих основных модулей:
+
+- **AuthModule** - аутентификация и авторизация пользователей
+- **UsersModule** - управление пользователями
+- **ColumnsModule** - управление колонками (списками задач)
+- **CardsModule** - управление карточками (задачами)
+- **CommentsModule** - управление комментариями к карточкам
+- **PrismaModule** - интеграция с Prisma ORM
+
+## Модель данных
+
+### User (Пользователь)
+- `id`: уникальный идентификатор
+- `email`: email пользователя (уникальный)
+- `password`: хешированный пароль
+- `createdAt`: дата создания
+- `updatedAt`: дата обновления
+- Связи: имеет множество колонок, карточек и комментариев  
+
+### Column (Колонка)
+- `id`: уникальный идентификатор
+- `title`: название колонки
+- `userId`: ID владельца колонки
+- `createdAt`: дата создания
+- `updatedAt`: дата обновления
+- Связи: принадлежит пользователю, содержит множество карточек 
+
+### Card (Карточка)
+- `id`: уникальный идентификатор
+- `title`: название карточки
+- `description`: описание (опционально)
+- `userId`: ID создателя
+- `columnId`: ID колонки
+- `createdAt`: дата создания
+- `updatedAt`: дата обновления
+- Связи: принадлежит пользователю и колонке, содержит множество комментариев 
+
+### Comment (Комментарий)
+- `id`: уникальный идентификатор
+- `content`: текст комментария
+- `userId`: ID автора
+- `cardId`: ID карточки
+- `createdAt`: дата создания
+- Связи: принадлежит пользователю и карточке (каскадное удаление) 
+
+## API Endpoints
+
+### Аутентификация (`/auth`)
+
+#### POST `/auth/register`
+Регистрация нового пользователя.
+
+**Тело запроса:**
+```json
+{
+  "email": "string",
+  "password": "string"
+}
 ```
 
-## Compile and run the project
+**Ответ:** Данные пользователя без пароля 
 
-```bash
-# development
-$ npm run start
+Пароль хешируется с использованием bcrypt перед сохранением в базу данных. 
+#### POST `/auth/login`
+Вход пользователя в систему.
 
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+**Тело запроса:**
+```json
+{
+  "email": "string",
+  "password": "string"
+}
 ```
 
-## Run tests
+**Ответ:** JWT токен доступа 
 
-```bash
-# unit tests
-$ npm run test
+Токен действителен в течение 1 часа.
 
-# e2e tests
-$ npm run test:e2e
+### Колонки (`/columns`)
 
-# test coverage
-$ npm run test:cov
+Все endpoints требуют JWT аутентификации через Bearer Token.
+
+#### POST `/columns`
+Создание новой колонки.
+
+**Тело запроса:**
+```json
+{
+  "title": "string"
+}
+``` 
+
+#### GET `/columns`
+Получение всех колонок текущего пользователя (с включенными карточками). 
+#### PATCH `/columns/:id`
+Обновление колонки.
+
+**Параметры:** `id` - ID колонки
+
+**Тело запроса:**
+```json
+{
+  "title": "string"
+}
 ```
 
-## Deployment
+Проверяется владение колонкой перед обновлением. 
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+#### DELETE `/columns/:id`
+Удаление колонки.
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+**Параметры:** `id` - ID колонки
 
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+Проверяется владение колонкой перед удалением. 
+
+### Карточки (`/cards`)
+
+Все endpoints требуют JWT аутентификации. 
+
+#### POST `/cards`
+Создание новой карточки.
+
+**Тело запроса:**
+```json
+{
+  "columnId": number,
+  "title": "string",
+  "description": "string" // опционально
+}
+``` 
+
+#### GET `/cards/:columnId`
+Получение всех карточек в колонке (отсортированы по дате создания по убыванию).
+
+#### PATCH `/cards/:id`
+Обновление карточки.
+
+**Параметры:** `id` - ID карточки
+
+**Тело запроса:**
+```json
+{
+  "title": "string",
+  "description": "string"
+}
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+Проверяется владение карточкой перед обновлением. 
 
-## Resources
+#### DELETE `/cards/:id`
+Удаление карточки.
 
-Check out a few resources that may come in handy when working with NestJS:
+**Параметры:** `id` - ID карточки
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+Проверяется владение карточкой перед удалением. 
 
-## Support
+### Комментарии (`/comments`)
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+Все endpoints требуют JWT аутентификации. 
 
-## Stay in touch
+#### POST `/comments`
+Создание нового комментария.
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+**Тело запроса:**
+```json
+{
+  "cardId": number,
+  "content": "string"
+}
+``` 
 
-## License
+#### GET `/comments/:cardId`
+Получение всех комментариев к карточке (отсортированы по дате создания по возрастанию). 
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+#### PATCH `/comments/:id`
+Обновление комментария.
+
+**Параметры:** `id` - ID комментария
+
+**Тело запроса:**
+```json
+{
+  "content": "string"
+}
+```
+
+Проверяется авторство комментария перед обновлением. 
+
+#### DELETE `/comments/:id`
+Удаление комментария.
+
+**Параметры:** `id` - ID комментария
+
+Проверяется авторство комментария перед удалением. 
+
+## Аутентификация и Авторизация
+
+### JWT Strategy
+Приложение использует JWT токены для аутентификации. Токен передается в заголовке `Authorization` как Bearer Token. 
+
+Секретный ключ для подписи токенов берется из переменной окружения `JWT_SECRET` или используется значение по умолчанию. 
+
+Валидация токена извлекает `userId` и `email` из payload. 
+
+## Установка и запуск
+
+### Установка зависимостей
+```bash
+npm install
+``` 
+
+### Команды для запуска
+
+- **Режим разработки**: `npm run start:dev` - запуск с автоматической перезагрузкой
+- **Режим отладки**: `npm run start:debug` - запуск с отладчиком
+- **Продакшн**: `npm run start:prod` - запуск скомпилированного приложения 
+
+### Тестирование
+
+- **Unit тесты**: `npm run test`
+- **E2E тесты**: `npm run test:e2e`
+- **Покрытие тестами**: `npm run test:cov` 
+
+### Конфигурация
+
+Приложение запускается на порту 3000 по умолчанию (или на порту из переменной окружения `PORT`). 
+
+### База данных
+
+Приложение использует PostgreSQL через Prisma ORM. Строка подключения берется из переменной окружения `DATABASE_URL`. 
+
+Prisma Service автоматически подключается при инициализации модуля и отключается при его уничтожении. 
+
+## Безопасность
+
+### Хеширование паролей
+Пароли хешируются с использованием bcrypt с salt rounds = 10 перед сохранением в базу данных. 
+
+### Проверка прав доступа
+Все операции с колонками, карточками и комментариями проверяют владение ресурсом. При попытке доступа к чужим ресурсам возвращается ошибка `ForbiddenException`. 
+
+### Обработка ошибок
+Приложение использует стандартные исключения NestJS:
+- `NotFoundException` - ресурс не найден
+- `ForbiddenException` - нет прав доступа
+- `UnauthorizedException` - ошибки аутентификации 
+
+## Notes
+
+Проект представляет собой полноценный REST API для управления задачами в стиле Trello с системой аутентификации, пользовательскими правами и полным CRUD функционалом для колонок, карточек и комментариев. 
+
+Все защищенные endpoints требуют JWT токен в заголовке Authorization. Проект следует лучшим практикам NestJS с разделением на модули, контроллеры и сервисы. Используется Prisma ORM для типобезопасной работы с базой данных PostgreSQL.
+
+Для работы приложения необходимо настроить переменные окружения:
+- `DATABASE_URL` - строка подключения к PostgreSQL
+- `JWT_SECRET` - секретный ключ для подписи JWT токенов (опционально, есть значение по умолчанию)
+- `PORT` - порт приложения (опционально, по умолчанию 3000)
+
