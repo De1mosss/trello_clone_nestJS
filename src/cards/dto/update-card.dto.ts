@@ -1,17 +1,16 @@
-import { IsString, IsOptional, MaxLength, IsInt } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
+import { IsOptional, IsString, MaxLength } from 'class-validator';
 
 export class UpdateCardDto {
-    @IsString({ message: 'Заголовок должен быть строкой' })
+    @ApiProperty({ example: 'Обновлённая карточка', description: 'Новое название карточки', required: false })
     @IsOptional()
-    @MaxLength(100, { message: 'Заголовок не должен быть длиннее 100 символов' })
+    @IsString()
+    @MaxLength(100)
     title?: string;
 
-    @IsString({ message: 'Описание должно быть строкой' })
+    @ApiProperty({ example: 'Новое описание', description: 'Обновлённое описание карточки', required: false })
     @IsOptional()
-    @MaxLength(500, { message: 'Описание не должно быть длиннее 500 символов' })
+    @IsString()
+    @MaxLength(500)
     description?: string;
-
-    @IsInt({ message: 'columnId должен быть числом' })
-    @IsOptional()
-    columnId?: number;
 }

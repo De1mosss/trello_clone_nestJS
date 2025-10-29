@@ -1,16 +1,16 @@
-import {Injectable, NotFoundException, ForbiddenException} from '@nestjs/common';
-import {PrismaService} from '../prisma/prisma.service';
-import {Prisma} from '@prisma/client';
+import { Injectable } from '@nestjs/common';
+import { PrismaService } from '../prisma/prisma.service';
+import { CreateColumnDto } from './dto/create-column.dto';
+import { UpdateColumnDto } from './dto/update-column.dto';
 
 @Injectable()
 export class ColumnsService {
-    constructor(private readonly prisma: PrismaService) {
-    }
+    constructor(private readonly prisma: PrismaService) {}
 
-    async create(userId: number, title: string) {
+    async create(userId: number, dto: CreateColumnDto) {
         return this.prisma.column.create({
             data: {
-                title,
+                title: dto.title,
                 userId,
             },
         });
@@ -18,29 +18,21 @@ export class ColumnsService {
 
     async findAll(userId: number) {
         return this.prisma.column.findMany({
-            where: {userId},
-            include: {cards: true},
+            where: { userId },
+            include: { cards: true },
         });
     }
 
-    async update(id: number, userId: number, data: Prisma.ColumnUpdateInput) {
-        const column = await this.prisma.column.findUnique({where: {id}});
-
-        if (!column) throw new NotFoundException('Колонка не найдена');
-        if (column.userId !== userId) throw new ForbiddenException('Нет доступа');
-
-        return this.prisma.column.update({
-            where: {id},
-            data,
+    async update(id: number, userId: number, dto: UpdateColumnDto) {
+        return this.prisma.column.updateMany({
+            where: { id, userId },
+            data: { title: dto.title },
         });
     }
 
     async remove(id: number, userId: number) {
-        const column = await this.prisma.column.findUnique({where: {id}});
-
-        if (!column) throw new NotFoundException('Колонка не найдена');
-        if (column.userId !== userId) throw new ForbiddenException('Нет доступа');
-
-        return this.prisma.column.delete({where: {id}});
+        return this.prisma.column.deleteMany({
+            where: { id, userId },
+        });
     }
 }

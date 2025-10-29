@@ -1,20 +1,21 @@
-import {Injectable, UnauthorizedException} from '@nestjs/common';
-import {PrismaService} from '../prisma/prisma.service';
-import {JwtService} from '@nestjs/jwt';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { PrismaService } from '../prisma/prisma.service';
+import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
+import { RegisterDto } from './dto/register.dto';
+import { LoginDto } from './dto/login.dto';
 
 @Injectable()
 export class AuthService {
     constructor(
         private readonly prisma: PrismaService,
         private readonly jwtService: JwtService,
-    ) {
-    }
+    ) {}
 
-    async register(email: string, password: string) {
-        const existingUser = await this.prisma.user.findUnique({
-            where: {email},
-        });
+    async register(dto: RegisterDto) {
+        const { email, password } = dto;
+
+        const existingUser = await this.prisma.user.findUnique({ where: { email } });
         if (existingUser) {
             throw new UnauthorizedException('Пользователь с таким email уже существует');
         }
@@ -22,10 +23,7 @@ export class AuthService {
         const hashedPassword = await bcrypt.hash(password, 10);
 
         const user = await this.prisma.user.create({
-            data: {
-                email,
-                password: hashedPassword,
-            },
+            data: { email, password: hashedPassword },
         });
 
         return {
@@ -35,9 +33,11 @@ export class AuthService {
         };
     }
 
-    async login(email: string, password: string) {
-        const user = await this.prisma.user.findUnique({where: {email}});
 
+    async login(dto: LoginDto) {
+        const { email, password } = dto;
+
+        const user = await this.prisma.user.findUnique({ where: { email } });
         if (!user) {
             throw new UnauthorizedException('Неверный email или пароль');
         }
@@ -47,7 +47,7 @@ export class AuthService {
             throw new UnauthorizedException('Неверный email или пароль');
         }
 
-        const payload = {sub: user.id, email: user.email};
+        const payload = { sub: user.id, email: user.email };
         const token = this.jwtService.sign(payload);
 
         return {

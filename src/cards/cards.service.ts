@@ -1,31 +1,27 @@
 import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { Prisma } from '@prisma/client';
+import {CreateCardDto} from "./dto/create-card.dto";
 
 @Injectable()
 export class CardsService {
     constructor(private readonly prisma: PrismaService) {}
 
-    async create(userId: number, columnId: number, title: string, description?: string) {
+    async create(userId: number, dto: CreateCardDto) {
+        const { columnId, title, description } = dto;
         return this.prisma.card.create({
             data: {
+                columnId,
                 title,
                 description,
                 userId,
-                columnId,
             },
         });
     }
 
-    async findAll(columnId: number, userId: number) {
+    async findAllByColumn(columnId: number) {
         return this.prisma.card.findMany({
-            where: {
-                columnId,
-                userId,
-            },
-            orderBy: {
-                createdAt: 'desc',
-            },
+            where: { columnId },
         });
     }
 

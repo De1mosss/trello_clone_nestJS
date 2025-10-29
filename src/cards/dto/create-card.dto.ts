@@ -1,17 +1,19 @@
-import { IsNotEmpty, IsString, IsOptional, MaxLength, IsInt } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
+import { IsNotEmpty, IsString, IsInt, MaxLength } from 'class-validator';
 
 export class CreateCardDto {
-    @IsString({ message: 'Заголовок должен быть строкой' })
-    @IsNotEmpty({ message: 'Заголовок не может быть пустым' })
-    @MaxLength(100, { message: 'Заголовок не должен быть длиннее 100 символов' })
+    @ApiProperty({ example: 'Сделать задачу', description: 'Название карточки' })
+    @IsString()
+    @IsNotEmpty()
+    @MaxLength(100)
     title: string;
 
-    @IsString({ message: 'Описание должно быть строкой' })
-    @IsOptional()
-    @MaxLength(500, { message: 'Описание не должно быть длиннее 500 символов' })
+    @ApiProperty({ example: 'Описание задачи', description: 'Подробное описание карточки', required: false })
+    @IsString()
+    @MaxLength(500)
     description?: string;
 
-    @IsInt({ message: 'columnId должен быть числом' })
-    @IsNotEmpty({ message: 'columnId обязателен' })
+    @ApiProperty({ example: 1, description: 'ID колонки, к которой принадлежит карточка' })
+    @IsInt()
     columnId: number;
 }
