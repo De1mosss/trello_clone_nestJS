@@ -1,23 +1,20 @@
 import {Controller, Post, Get, Patch, Delete, Body, Param, Request, UseGuards, ParseIntPipe} from '@nestjs/common';
-import {CommentsService} from './comments.service';
-import {JwtAuthGuard} from '../auth/jwt-auth.guard';
+import { CommentsService } from './comments.service';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { CreateCommentDto } from './dto/create-comment.dto';
+import { UpdateCommentDto } from './dto/update-comment.dto';
 
 @Controller('comments')
 @UseGuards(JwtAuthGuard)
 export class CommentsController {
-    constructor(private readonly commentsService: CommentsService) {
-    }
+    constructor(private readonly commentsService: CommentsService) {}
 
     @Post()
-    create(
-        @Request() req,
-        @Body('cardId', ParseIntPipe) cardId: number,
-        @Body('content') content: string,
-    ) {
-        return this.commentsService.create(req.user.userId, cardId, content);
+    create(@Request() req, @Body() dto: CreateCommentDto) {
+        return this.commentsService.create(req.user.userId, dto);
     }
 
-    @Get(':cardId')
+    @Get('card/:cardId')
     findAll(@Param('cardId', ParseIntPipe) cardId: number) {
         return this.commentsService.findAll(cardId);
     }
@@ -26,9 +23,9 @@ export class CommentsController {
     update(
         @Param('id', ParseIntPipe) id: number,
         @Request() req,
-        @Body('content') content: string,
+        @Body() dto: UpdateCommentDto,
     ) {
-        return this.commentsService.update(id, req.user.userId, content);
+        return this.commentsService.update(id, req.user.userId, dto);
     }
 
     @Delete(':id')
