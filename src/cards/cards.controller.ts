@@ -3,6 +3,7 @@ import {CardsService} from './cards.service';
 import {JwtAuthGuard} from '../auth/jwt-auth.guard';
 import {CreateCardDto} from './dto/create-card.dto';
 import {UpdateCardDto} from './dto/update-card.dto';
+import {OwnershipGuard} from "../auth/ownership.guard";
 
 @Controller('cards')
 @UseGuards(JwtAuthGuard)
@@ -21,6 +22,7 @@ export class CardsController {
     }
 
     @Patch(':id')
+    @UseGuards(JwtAuthGuard, OwnershipGuard)
     update(
         @Param('id', ParseIntPipe) id: number,
         @Request() req,
@@ -30,6 +32,7 @@ export class CardsController {
     }
 
     @Delete(':id')
+    @UseGuards(JwtAuthGuard, OwnershipGuard)
     remove(@Param('id', ParseIntPipe) id: number, @Request() req) {
         return this.cardsService.remove(id, req.user.userId);
     }

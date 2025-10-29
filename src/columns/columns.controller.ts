@@ -4,6 +4,7 @@ import {JwtAuthGuard} from '../auth/jwt-auth.guard';
 import {CreateColumnDto} from './dto/create-column.dto';
 import {UpdateColumnDto} from './dto/update-column.dto';
 import {ApiTags, ApiBearerAuth, ApiOperation} from '@nestjs/swagger';
+import {OwnershipGuard} from "../auth/ownership.guard";
 
 @ApiTags('Columns')
 @ApiBearerAuth()
@@ -30,21 +31,19 @@ export class ColumnsController {
 
 
     @Patch(':id')
-    @ApiOperation({summary: 'Обновить колонку по ID (только владелец)'})
-    async update(
+    @UseGuards(JwtAuthGuard, OwnershipGuard)
+    update(
         @Param('id', ParseIntPipe) id: number,
         @Request() req,
         @Body() dto: UpdateColumnDto,
     ) {
-        const userId = req.user.userId;
-        return this.columnsService.update(id, userId, dto);
+        return this.columnsService.update(id, req.user.userId, dto);
     }
 
 
     @Delete(':id')
-    @ApiOperation({summary: 'Удалить колонку по ID (только владелец)'})
-    async remove(@Param('id', ParseIntPipe) id: number, @Request() req) {
-        const userId = req.user.userId;
-        return this.columnsService.remove(id, userId);
+    @UseGuards(JwtAuthGuard, OwnershipGuard)
+    remove(@Param('id', ParseIntPipe) id: number, @Request() req) {
+        return this.columnsService.remove(id, req.user.userId);
     }
 }
